@@ -10,6 +10,7 @@ import imagemin from 'gulp-imagemin'
 import htmlmin from 'gulp-htmlmin'
 import browserSync from 'browser-sync'
 import jshint from 'gulp-jshint'
+import shell from 'gulp-shell'
 
 const sass = gulpSass(dartSass);
 const cleanCss = new LessPluginCleanCSS({ advanced: true });
@@ -27,33 +28,33 @@ function minJsTask() {
   return gulp.src('tmp/js/*.js')
     .pipe(concat('index.min.js'))
     .pipe(uglify())
-    .pipe(gulp.dest('build/js'))
+    .pipe(gulp.dest('dist/js'))
 }
 
 function imagesMinTask() {
   return gulp.src('src/assets/images/*')
     .pipe(imagemin())
-    .pipe(gulp.dest('build/assets/images'))
+    .pipe(gulp.dest('dist/assets/images'))
 }
 
 function htmlMinTask() {
-  return gulp.src('src/html/*.html')
+  return gulp.src('src/*.html')
     .pipe(htmlmin({ collapseWhitespace: true }))
-    .pipe(gulp.dest('.'))
+    .pipe(gulp.dest('dist'))
 }
 
 function sassTask() {
   return gulp.src('src/styles/sass/*.sass')
     .pipe(sass.sync({ outputStyle: 'compressed' }).on('error', sass.logError))
     .pipe(concat('index.min.css'))
-    .pipe(gulp.dest('./build/styles/'))
+    .pipe(gulp.dest('dist/styles'))
 }
 
 function lessTask() {
   return gulp.src('src/styles/less/*.less')
     .pipe(less({plugins: [cleanCss]}))
     .pipe(concat('less.min.css'))
-  .pipe(gulp.dest('build/styles'))
+  .pipe(gulp.dest('dist/styles'))
 }
 
 function lint() { // when not using typescript
@@ -69,24 +70,29 @@ function watch() {
   gulp.watch('src/styles/less/*.less', lessTask)
   gulp.watch('src/ts/*.ts', gulp.series(tsTask, minJsTask))
   gulp.watch('src/assets/images/*', imagesMinTask)
-  gulp.watch('src/html/*.html', htmlMinTask)
+  gulp.watch('src/*.html', htmlMinTask)
 }
 
-function build(done) {
+function clean() {
+  return gulp.src('*.js', { read: false })
+  .pipe(shell('rm -rf dist && rm -rf tmp'))
+}
+
+function deploy(done) {
   return gulp.series(tsTask, minJsTask, imagesMinTask, htmlMinTask, sassTask, lessTask)(done)
 }
 
 function serve() {
   browserSync({
     server: {
-      baseDir: './'
+      baseDir: 'dist/'
     },
     open: false,
     notify: true,
   });
-  build()
+  deploy()
   watch()
-  gulp.watch(['*.html', 'build/styles/*.css', 'build/js/*.js', 'build/assets/images/*'])
+  gulp.watch(['dist/*.html', 'dist/styles/*.css', 'dist/js/*.js', 'dist/assets/images/*'])
     .on('change', browserSync.reload)
 }
 
@@ -97,8 +103,9 @@ gulp.task(imagesMinTask)
 gulp.task(htmlMinTask)
 gulp.task(sassTask)
 gulp.task(watch)
-gulp.task(build)
+gulp.task(clean)
+gulp.task(deploy)
 gulp.task(serve)
 
 gulp.task('default',
-  gulp.series(build, watch));
+  gulp.series(deploy, watch));
