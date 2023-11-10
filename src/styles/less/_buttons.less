@@ -1,0 +1,41 @@
+#buttons {
+
+  .button(@background_color, @border_color, @text_color: white) {
+    padding: 10px 16px;
+    font-size: 14px;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid @border_color;
+    border-radius: percentage(0.1);
+    color: @text_color;
+    background-color: @background_color;
+    cursor: pointer;
+    transition: all .2s;
+    margin-bottom: 5px;
+
+    &:hover {
+      background-color: lighten(@background_color, 15%);
+      transform: scale(1.1);
+    }
+  }
+}
+
+.btn-default {
+  #buttons>.button(@background_color: rgb(183, 183, 183), @border_color: #ccc, @text_color: black);
+}
+
+.btn-blue {
+  #buttons>.button(@background_color: rgb(43, 40, 197), @border_color: #ccc);
+}
+
+.btn-red {
+  #buttons>.button(@background_color: rgb(184, 21, 21), @border_color: #ccc);
+}
+
+.btn-green {
+  #buttons>.button(@background_color: rgb(52, 121, 31), @border_color: #ccc);
+}
+
+.btn-orange {
+  #buttons>.button(@background_color: rgb(133, 58, 33), @border_color: #ccc);
+}
